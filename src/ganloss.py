@@ -10,9 +10,9 @@ class GANLoss(nn.Module):
         self.register_buffer('real_label', torch.tensor(real_label))
         self.register_buffer('fake_label', torch.tensor(fake_label))
         if gan_mode == 'vanilla':
-            self.loss = # TODO: use binary cross entro^y
+            self.loss = nn.BCELoss()# TODO: use binary cross entro^y
         elif gan_mode == 'lsgan':
-            self.loss = # TODO: use mse 
+            self.loss = nn.MSELoss()# TODO: use mse 
 
     def get_labels(self, preds, target_is_real):
         if target_is_real:

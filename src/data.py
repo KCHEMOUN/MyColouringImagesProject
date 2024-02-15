@@ -14,6 +14,11 @@ class ColorizationDataset(Dataset):
             self.transforms = transforms.Compose([
                 transforms.Resize((SIZE, SIZE),  Image.BICUBIC),
                 # TODO: A little data augmentation FLIPS?!
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),  #Cela ajoutera des retournements horizontaux et verticaux aléatoires aux images pendant l'entraînement, 
+                                                  #ce qui peut aider à améliorer la généralisation du modèle.
+                transforms.RandomRotation(degrees=60), #"degrees" pour contrôler l'amplitude de la rotation.
+           
             ])
         elif split == 'val':
             self.transforms = transforms.Resize((SIZE, SIZE),  Image.BICUBIC)
@@ -25,13 +30,19 @@ class ColorizationDataset(Dataset):
     def __getitem__(self, idx):
         img = Image.open(self.paths[idx]).convert("RGB")
         # TODO: apply transforms 
+        if self.transforms is not None: #Apply transforms if available
+          img = self.transforms(img)
+
         img = np.array(img)
         img_lab = rgb2lab(img).astype("float32") # Converting RGB to L*a*b
         # TODO: convert to tensor 
 
+        ##Normalisation d'abord des valeurs L et B
         L = img_lab[[0], ...] / 50. - 1. # Between -1 and 1
         ab = img_lab[[1, 2], ...] / 110. # Between -1 and 1
-
+        ##Conversion
+        L_tensor = torch.tensor(L)
+        ab_tensor = torch.tensor(ab)
         return {'L': L, 'ab': ab}
 
     def __len__(self):
